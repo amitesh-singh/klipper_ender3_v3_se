@@ -11,7 +11,7 @@ class ESP32ChamberSensor:
         self.url = config.get('url')
         self.sample_timer = self.reactor.register_timer(self._update)
         logging.info("[ESP32Chmaber]: name %s", self.name)
-        #self.printer.add_object("esp32_chamber " + self.name, self)
+        self.printer.add_object("esp32_chamber " + self.name, self)
         self.printer.register_event_handler("klippy:ready", self.handle_connect)
 
     def handle_connect(self):
@@ -22,7 +22,7 @@ class ESP32ChamberSensor:
             data = requests.get(self.url, timeout=2).json()
             self.temp = float(data.get("temp", 0))
             self.humidity = float(data.get("humid", 0))
-            logging.info("[ESP32Chamber]: temp: %.2f, humid: %.2f", self.temp, self.humidity)
+            #logging.info("[ESP32Chamber]: temp: %.2f, humid: %.2f", self.temp, self.humidity)
             if self._callback:
                 self._callback(eventtime, self.temp)
         except Exception as e:
@@ -30,7 +30,7 @@ class ESP32ChamberSensor:
         return eventtime + 5.0  # poll every 5s
 
     def get_report_time_delta(self):
-        return 1.0
+        return 5.0
 
     def setup_minmax(self, min_temp, max_temp):
         self.min_temp = min_temp
@@ -39,16 +39,12 @@ class ESP32ChamberSensor:
     def setup_callback(self, cb):
         self._callback = cb
 
-    def get_temp(self, eventtime):
-        pass
-
     def get_status(self, eventtime):
         #logging.info("[ESP32Chamber] GET_STATUS CALLED temp=%.2f, humid: %.2f", self.temp, self.humidity)
         data = {
            'temperature': self.temp,
            'humidity': self.humidity,
         }
-        logging.info(data)
         return data
 
 def load_config(config):
