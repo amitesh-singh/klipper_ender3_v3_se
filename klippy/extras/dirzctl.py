@@ -57,7 +57,11 @@ class DirZCtl:
     def _build_config(self):
         self.mcu.add_config_cmd("config_dirzctl oid=%d z_count=%d" % (self.oid, len(self.steppers)))
         for i in range(len(self.steppers)):
-            dir_pin, step_pin, ivt_dir, ivt_step = self.steppers[i].get_pin_info()
+            s = self.steppers[i]
+            dir_pin = s._dir_pin
+            step_pin = s._step_pin
+            ivt_dir = int(s._invert_dir)
+            ivt_step = int(s._invert_step)
             self.mcu.add_config_cmd("add_dirzctl oid=%d index=%d dir_pin=%s step_pin=%s dir_invert=%d step_invert=%d" % (self.oid, i, dir_pin, step_pin, ivt_dir, ivt_step))
 
         # self.run_cmd = self.mcu.lookup_command("run_dirzctl oid=%c direct=%c step_us=%u step_cnt=%u is_ck_con=%c", cq=None)
