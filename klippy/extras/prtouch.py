@@ -416,12 +416,13 @@ class PRTouchZOffsetWrapper:
         self._move([probe_x, probe_y, self.cfg.bed_max_err + 1.], self.cfg.g29_xy_speed)
         probe_gcmd = self.obj.gcode.create_gcode_command("PROBE", "PROBE", {'SAMPLES': '2'})
         z_probe = probe.run_single_probe(self.obj.probe, probe_gcmd)
-        self.pnt_msg('Probe at sensor: %.3f' % z_probe[2])
+        z_probe_z = z_probe[2]
+        self.pnt_msg('Probe at sensor: %.3f' % z_probe_z)
 
         nozzle_z_offset = self.probe_z_offset(x, y)
         self.pnt_msg('Nozzle z_offset: %.3f' % nozzle_z_offset)
 
-        z_offset = nozzle_z_offset - z_probe[2]
+        z_offset = nozzle_z_offset - z_probe_z
         self.pnt_msg('Calculated z_offset: %.3f' % z_offset)
 
         z_adjust = z_offset + start_z_offset
@@ -429,8 +430,9 @@ class PRTouchZOffsetWrapper:
         if gcmd.get_int('APPLY_Z_ADJUST', 0) == 1:
             self.obj.gcode.run_script_from_command('SET_GCODE_OFFSET Z_ADJUST=%f MOVE=1' % (z_adjust))
 
-        z_probe[2] = homing_origin[2] + z_adjust - start_z_offset
-        self.probe_calibrate_finalize(z_probe)
+        kin_pos = [z_probe[0], z_probe[1],
+                   homing_origin[2] + z_adjust - start_z_offset]
+        self.probe_calibrate_finalize(kin_pos)
 
     cmd_PRTOUCH_ACCURACY_help = "Probe Z-height accuracy at sensoor position"
     def cmd_PRTOUCH_ACCURACY(self, gcmd):
